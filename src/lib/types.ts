@@ -1,0 +1,1 @@
+export type Student={id:string;student_code:string;full_name:string;gender:string|null;date_of_birth:string|null;phone:string|null;email:string|null;address:string|null;class_name:string|null;section:string|null;roll_no:string|null;admission_date:string|null;status:string};
