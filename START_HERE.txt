@@ -1,0 +1,14 @@
+EDUSPHERE — FINAL PROJECT
+
+1. Extract this ZIP.
+2. Open the extracted folder in VS Code.
+3. Open Supabase -> SQL Editor.
+4. Open: supabase/ONE_CLICK_SETUP.sql
+5. Copy the entire file and click Run once.
+6. Keep your existing .env values in the project root.
+7. Run: npm install
+8. Run: npm run dev
+
+For GitHub/Vercel, upload this same project folder. Vercel Root Directory is ./
+
+The SQL setup creates/updates the classes, timetable, attendance, fee-status, date-sheet and role-permission database layer. It is designed to be safe to run again.

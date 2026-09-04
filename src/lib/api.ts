@@ -12,6 +12,7 @@ export async function rows(table: string, select='*', order='created_at', ascend
   }
   if(error) throw error; return data??[];
 }
+export async function upsertRow(table:string, payload:any, onConflict?:string){const {data,error}=await supabase.from(table).upsert(payload,{onConflict}).select().single();if(error)throw error;return data;}
 export async function insertRow(table:string, payload:any){const {data,error}=await supabase.from(table).insert(payload).select().single();if(error)throw error;return data;}
 export async function updateRow(table:string,id:string,payload:any){const {data,error}=await supabase.from(table).update(payload).eq('id',id).select().single();if(error)throw error;return data;}
 export async function deleteRow(table:string,id:string){const {error}=await supabase.from(table).delete().eq('id',id);if(error)throw error;}
@@ -22,7 +23,15 @@ export async function saveAttendance(table:string, items:any[], date:string, mar
 
 // Student-specific helpers used by the Students page.
 export async function getStudents(){
-  return rows('students','*','created_at',false);
+  // Keep the Students page readable on older Supabase databases that do not yet have class_id.
+  // New databases still return class_id because the wildcard fallback is attempted second.
+  const columns='id,student_code,full_name,gender,date_of_birth,phone,email,address,parent_name,parent_phone,emergency_contact,class_name,section,roll_no,admission_date,status,created_at,updated_at';
+  const legacy=await rows('students',columns,'created_at',false);
+  try{
+    const {data,error}=await supabase.from('students').select('id,class_id');
+    if(!error && data) { const ids=new Map(data.map((row:any)=>[row.id,row.class_id])); return legacy.map((s:any)=>({...s,class_id:ids.get(s.id)??null})); }
+  }catch{}
+  return legacy;
 }
 export async function createStudent(payload:any){
   return insertRow('students',payload);

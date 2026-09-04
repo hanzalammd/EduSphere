@@ -1,28 +1,38 @@
-# EduSphere Full-Stack School Management
+# EduSphere — Smart School Management
 
-Single Vite + React + TypeScript project with Supabase integration and PostgreSQL schema/RLS. It is designed for shared online school data.
+A single React + Vite + TypeScript school-management project using Supabase for authentication and persistent shared data.
 
-## Setup
-1. Install Node.js LTS and VS Code.
-2. Open this folder in VS Code and run `npm install`.
-3. Create a Supabase project.
-4. In Supabase SQL Editor, run **all** of `supabase/schema.sql`.
-5. Copy `.env.example` to `.env` and fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from Supabase Project Settings → API.
-6. Run `npm run dev` and open the Vite URL.
-7. Test production build with `npm run build`.
-8. Push the folder to GitHub and import it into Vercel. Build command: `npm run build`; output: `dist`. Add the same two environment variables in Vercel.
+## Final setup
 
-## First admin
-Create a user in Supabase Authentication → Users. Then in SQL Editor run:
-`update public.profiles set role='admin' where id='USER_UUID';`
-
-## Roles
-`admin`, `teacher`, `accountant`, `student`, `parent`.
-
-## Important security
-Never commit `.env`. Never expose a Supabase service-role/secret key in the frontend. The schema enables Row Level Security, but before real school production use, tighten student/parent visibility policies to your exact school rules.
+1. Extract the ZIP and open the folder in VS Code.
+2. In Supabase, open **SQL Editor**.
+3. Open `supabase/ONE_CLICK_SETUP.sql` from this project.
+4. Copy the complete SQL file and run it.
+5. Keep `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the root `.env` file.
+6. Run `npm install` then `npm run dev`.
 
 ## Included
-Dashboard, Students CRUD example, responsive UI, teachers, classes, student/teacher attendance, fees, assignments, exams/results, notices, reports, settings module shells, Supabase client, SQL relationships, auth profile trigger, RLS, seed students and Vercel config.
 
-The remaining modules are deliberately scaffolded cleanly so their full CRUD/forms can be expanded without changing the project architecture.
+- Professional responsive admin/teacher workspace
+- Students, teachers and classes with persistent Supabase data
+- Class/section detail open/close flow
+- Weekly timetable with 8 periods per day
+- Student and teacher attendance with Present / Absent / Leave only
+- Fees, payments, balances and automatic Paid / Partial / Unpaid status
+- Exams, results, assignments, submissions, notices and reports
+- Visitor landing experience with crisp, stable typography
+- GitHub/Vercel-ready single project folder
+
+## Important
+
+The browser app cannot create Supabase tables by itself. The one-time `ONE_CLICK_SETUP.sql` step is required for the database features to work. The SQL is safe to run again and repairs the fee status from existing payment records.
+
+## Existing database repair
+
+If an existing Supabase project shows `Could not find the 'class_id' column of 'students' in the schema cache`, run `supabase/FIX_STUDENTS_CLASS_ID.sql` in the Supabase SQL Editor. This migration adds `students.class_id`, creates missing section-less class records from existing student class names, links existing students to those classes, adds the class index, and requests a PostgREST schema refresh.
+
+For a new database, use `supabase/schema.sql` or `supabase/ONE_CLICK_SETUP.sql`. Both now define `students.class_id` as part of the schema and retain an idempotent compatibility migration for older installations.
+
+
+## Existing Supabase database
+If your deployed/local database was created from an older EduSphere schema, run `supabase/01_FIX_STUDENTS_CLASS_ID.sql` once in Supabase SQL Editor. This adds the `students.class_id` relationship and links existing students to section-less class records.
