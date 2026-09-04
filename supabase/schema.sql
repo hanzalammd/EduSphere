@@ -102,16 +102,59 @@ create policy "timetable_read" on public.class_timetable for select to authentic
 create policy "timetable_write" on public.class_timetable for all to authenticated using(public.current_role()='admin') with check(public.current_role()='admin');
 create index if not exists idx_class_timetable_class on public.class_timetable(class_id,period_no);
 
--- Starter class sections for the academic structure. Safe to re-run.
-insert into public.classes(name,section,academic_year)
-select x.name,'A',extract(year from current_date)::text
-from (values ('Grade 7'),('Grade 8'),('Grade 9'),('Grade 10')) as x(name)
-where not exists (select 1 from public.classes c where c.name=x.name and c.section='A' and c.academic_year=extract(year from current_date)::text);
+-- Classes are created automatically when the first student is added.
 
 -- Connected class/section records, weekly timetable, date sheets and immutable teacher entry rules.
 update public.students s set class_id=c.id from public.classes c where s.class_id is null and s.class_name=c.name and s.section=c.section;
 create index if not exists idx_students_class_id on public.students(class_id);
 create unique index if not exists uq_classes_clean_name_year on public.classes(lower(trim(name)),academic_year) where section='';
+
+-- Keep the class list synchronized with student records: when the last student
+-- in a class is deleted, remove that now-empty class and its class-owned data.
+create or replace function public.cleanup_orphan_student_classes()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from public.classes c
+  where not exists (
+    select 1 from public.students s
+    where s.class_id = c.id
+       or (
+         s.class_id is null
+         and nullif(trim(s.class_name), '') is not null
+         and lower(trim(s.class_name)) = lower(trim(c.name))
+         and coalesce(trim(s.section), '') = coalesce(trim(c.section), '')
+       )
+  );
+end;
+$$;
+
+create or replace function public.cleanup_orphan_student_classes_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.cleanup_orphan_student_classes();
+  return null;
+end;
+$$;
+
+revoke execute on function public.cleanup_orphan_student_classes() from public, anon, authenticated;
+revoke execute on function public.cleanup_orphan_student_classes_trigger() from public, anon, authenticated;
+
+drop trigger if exists cleanup_orphan_student_classes_after_delete on public.students;
+create trigger cleanup_orphan_student_classes_after_delete
+after delete on public.students
+for each statement
+execute function public.cleanup_orphan_student_classes_trigger();
+
+-- Remove any old empty/starter classes immediately when this migration is run.
+select public.cleanup_orphan_student_classes();
 
 -- Timetable is weekly: one teacher/subject assignment per class, day and period.
 alter table public.class_timetable add column if not exists day_of_week text not null default 'Monday';
@@ -192,6 +235,7 @@ drop policy if exists "teacher_insert_results" on public.results;
 drop policy if exists "teacher_insert_notices" on public.notices;
 drop policy if exists "admin_all_student_attendance" on public.student_attendance;
 drop policy if exists "admin_all_teacher_attendance" on public.teacher_attendance;
+drop policy if exists "teacher_own_attendance_insert" on public.teacher_attendance;
 drop policy if exists "admin_all_fees" on public.fees;
 drop policy if exists "accountant_fees" on public.fees;
 drop policy if exists "admin_all_fee_payments" on public.fee_payments;
@@ -216,6 +260,8 @@ create policy "teacher_insert_results" on public.results for insert to authentic
 create policy "teacher_insert_notices" on public.notices for insert to authenticated with check(public.current_role()='teacher');
 create policy "admin_all_student_attendance" on public.student_attendance for all to authenticated using(public.current_role()='admin') with check(public.current_role()='admin');
 create policy "admin_all_teacher_attendance" on public.teacher_attendance for all to authenticated using(public.current_role()='admin') with check(public.current_role()='admin');
+create policy "teacher_own_attendance_insert" on public.teacher_attendance for insert to authenticated
+with check(public.current_role()='teacher' and exists(select 1 from public.teachers t where t.id=teacher_attendance.teacher_id and t.profile_id=auth.uid()));
 create policy "admin_all_fees" on public.fees for all to authenticated using(public.current_role()='admin') with check(public.current_role()='admin');
 create policy "accountant_fees" on public.fees for all to authenticated using(public.current_role()='accountant') with check(public.current_role()='accountant');
 create policy "admin_all_fee_payments" on public.fee_payments for all to authenticated using(public.current_role()='admin') with check(public.current_role()='admin');

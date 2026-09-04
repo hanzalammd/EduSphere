@@ -36,7 +36,7 @@ export default function Dashboard({role='admin',onNavigate}:{role?:string;onNavi
  const stats=[
   {label:'Students',value:s.students,icon:Users,meta:'Active records'},
   {label:'Teachers',value:s.teachers,icon:GraduationCap,meta:'Teaching staff'},
-  {label:'Classes',value:s.classes,icon:School,meta:'Classes'},
+  {label:'Classes',value:s.classes,icon:School,meta:'Class groups'},
   {label:'Outstanding fees',value:'Rs '+s.fees.toLocaleString(),icon:WalletCards,meta:'Current balance'},
  ];
  return <section className="page dashboard-page">

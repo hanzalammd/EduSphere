@@ -12,3 +12,26 @@ EDUSPHERE — FINAL PROJECT
 For GitHub/Vercel, upload this same project folder. Vercel Root Directory is ./
 
 The SQL setup creates/updates the classes, timetable, attendance, fee-status, date-sheet and role-permission database layer. It is designed to be safe to run again.
+
+Teacher attendance fix:
+- A teacher account is automatically matched to the teacher record through teachers.profile_id.
+- In Teacher Attendance, a teacher sees only their own attendance and cannot choose/change another teacher ID.
+- Supabase RLS also enforces that a teacher can insert attendance only for their linked teacher record.
+- If your existing database was already set up, run: supabase/FIX_TEACHER_OWN_ATTENDANCE.sql once in Supabase SQL Editor.
+
+
+GITHUB / VERCEL
+If you are replacing the version already connected to Vercel, do not run Git commands inside a normal extracted ZIP folder.
+Use the existing EduSphere Git repository folder, replace its files with this project, then run:
+  git add -A
+  git commit -m "Update EduSphere"
+  git push origin main
+Vercel will automatically deploy the push.
+If you do not have the repository on this PC, clone your GitHub EduSphere repository first, then copy these project files into that cloned folder.
+
+
+CLASS / STUDENT SYNC
+- Classes are created automatically when a student is added with a class name.
+- When the last student in a class is deleted, that empty class is automatically removed.
+- Empty old/starter classes are also removed by supabase/06_AUTO_CREATE_DELETE_EMPTY_CLASSES.sql.
+- Run that SQL once in Supabase SQL Editor on an existing project.
