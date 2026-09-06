@@ -36,3 +36,25 @@ For a new database, use `supabase/schema.sql` or `supabase/ONE_CLICK_SETUP.sql`.
 
 ## Existing Supabase database
 If your deployed/local database was created from an older EduSphere schema, run `supabase/01_FIX_STUDENTS_CLASS_ID.sql` once in Supabase SQL Editor. This adds the `students.class_id` relationship and links existing students to section-less class records.
+
+## Cinematic 3D Portfolio Pass
+
+The public EduSphere landing experience now has a full cinematic motion layer while the existing school-management application and Supabase workflows remain in place.
+
+Included in this pass:
+- Realistic CSS 3D school/campus hero with depth, glass HUDs, sun/haze, windows and pointer parallax.
+- Cinematic scroll storytelling across Dashboard, People, Attendance, Fees, Assignments, Results, Reports and Security.
+- 3D interface stages with perspective, reflections, depth layers and hover motion.
+- Scroll progress indicator, scene navigation rail, cursor light and subtle film-grain treatment.
+- Product-style intro, developer section, module wall and closing CTA.
+- Responsive/mobile layouts and reduced-motion support.
+- Existing sign-in/protected-preview behavior preserved.
+
+### Run
+
+```bash
+npm install
+npm run dev
+```
+
+The visual layer is intentionally dependency-free: it uses React + CSS 3D rather than adding a WebGL library, keeping the existing project easier to install and less likely to disturb the school-management functionality.
