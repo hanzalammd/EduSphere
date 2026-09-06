@@ -19,7 +19,7 @@ function HeroCampus(){
   useEffect(()=>{
     const move=(e:PointerEvent)=>{
       if(!ref.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      const r=ref.current;
+      const r=ref.current.getBoundingClientRect();
       const x=((e.clientX-r.left)/r.width-.5)*10;
       const y=((e.clientY-r.top)/r.height-.5)*-7;
       setTilt({x,y});

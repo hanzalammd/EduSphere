@@ -67,7 +67,7 @@ export default function Attendance({teacher=false,admin=false}:{teacher?:boolean
    let attendanceQuery:any=supabase.from(attendanceTable).select('*').gte('attendance_date',start).lte('attendance_date',end);
    if(teacher && !admin && ownTeacherId) attendanceQuery=attendanceQuery.eq('teacher_id',ownTeacherId);
    const {data,error:e}=await attendanceQuery; if(e)throw e;
-   const m:any={};(data||[]).forEach(x=>{m[`${x[idField]}|${x.attendance_date}`]=x});setRecords(m);
+   const m:any={};(data||[]).forEach((x:any)=>{m[`${x[idField]}|${x.attendance_date}`]=x});setRecords(m);
  }catch(e:any){setError(e?.message||String(e));setPeople([]);setRecords({})}finally{setLoading(false)}};
  useEffect(()=>{load()},[month,selectedClass,teacher]);
  const days=useMemo(()=>Array.from({length:daysInMonth(month)},(_,i)=>i+1),[month]);
